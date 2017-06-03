@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using Windows.UI.Xaml.Controls;
+using Windows.Data.Json;
 
 namespace JGitEventViewer
 {
@@ -68,12 +70,16 @@ namespace JGitEventViewer
                 */
 
                 httpResponseBody = await httpResponse.Content.ReadAsStringAsync();
+
+                JsonArray result = JsonArray.Parse(httpResponseBody);
+                return result.GetObjectAt(0).ToString();
+
             }
             catch (Exception ex)
             {
                 httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
             }
-
+            
             return httpResponseBody;
             /*
             HttpWebRequest request = (HttpWebRequest)System.Net.WebRequest.CreateHttp(this.url);

@@ -28,11 +28,18 @@ namespace JGitEventViewer
             this.InitializeComponent();
         }
 
+        private async void Refresh()
+        {
+            this.EventFetchProgressCircle.IsActive = true;
+
+            String result = await ((App)App.Current).Git.RefreshAsync();
+            this.GitEvents.Items.Add(result);
+
+            this.EventFetchProgressCircle.IsActive = false;
+        }
         private void RefreshEvents_Click(object sender, RoutedEventArgs e)
         {
-            Task<String> refreshTask = ((App)App.Current).Git.RefreshAsync();
-
-            this.GitEvents.Items.Add(refreshTask.Result);
+            this.Refresh();
         }
     }
 }
