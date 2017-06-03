@@ -3,8 +3,8 @@
   <Identity Name="c21749c4-0cbb-4071-a9a7-ef41e6203d66" Publisher="CN=msn" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="c21749c4-0cbb-4071-a9a7-ef41e6203d66" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>App1</DisplayName>
-    <PublisherDisplayName>msn</PublisherDisplayName>
+    <DisplayName>JGitEventViewer</DisplayName>
+    <PublisherDisplayName>Jory Stone</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>

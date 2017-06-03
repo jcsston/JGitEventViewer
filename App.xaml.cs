@@ -22,12 +22,15 @@ namespace JGitEventViewer
     /// </summary>
     sealed partial class App : Application
     {
+        public GitHubEventStream Git { get; } 
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
         public App()
         {
+            this.Git = new GitHubEventStream("https://api.github.com/events");
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
@@ -94,6 +97,7 @@ namespace JGitEventViewer
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
+            Git.Suspend();
             deferral.Complete();
         }
     }

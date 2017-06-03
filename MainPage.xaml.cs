@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -29,7 +30,9 @@ namespace JGitEventViewer
 
         private void RefreshEvents_Click(object sender, RoutedEventArgs e)
         {
+            Task<String> refreshTask = ((App)App.Current).Git.RefreshAsync();
 
+            this.GitEvents.Items.Add(refreshTask.Result);
         }
     }
 }

@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <ListView x:Name="GitEvents" HorizontalAlignment="Left" Height="500" Margin="10,10,10,10" VerticalAlignment="Bottom" Width="350"/>
+        <ListView x:Name="GitEvents" HorizontalAlignment="Center" Height="500" Margin="10,10,10,10" VerticalAlignment="Bottom" Width="350"/>
         <Button x:Name="RefreshEvents" Content="Refresh" HorizontalAlignment="Left" Margin="14,10,0,0" VerticalAlignment="Top" Click="RefreshEvents_Click"/>
 
     </Grid>
