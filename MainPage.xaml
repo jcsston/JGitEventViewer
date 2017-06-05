@@ -21,6 +21,8 @@
         <TextBlock TextWrapping="Wrap" Text="Use the refresh button below to fetch latest GitHub Events" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="5"/>
         <Button x:Name="RefreshEvents" Content="Refresh" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="RefreshEvents_Click" Grid.Row="1" Grid.Column="2" Margin="5"/>
         <ProgressRing x:Name="EventFetchProgressCircle" HorizontalAlignment="Left"  VerticalAlignment="Top" Height="32" Width="32" Grid.Row="1" Margin="5"/>
-        <ListView x:Name="GitEvents" HorizontalAlignment="Stretch"  Grid.Row="2" Grid.ColumnSpan="2" Margin="5"/>
+        <ListView x:Name="GitEvents" HorizontalAlignment="Stretch"  Grid.Row="2" Grid.ColumnSpan="2" Margin="5">
+
+        </ListView>
     </Grid>
 </Page>

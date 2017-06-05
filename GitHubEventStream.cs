@@ -20,7 +20,7 @@ namespace JGitEventViewer
         private Uri url = null;
         private int requestInterval = 30; // 30 seconds by default
         private object lastEventsLock = new object();
-        private JsonArray lastEvents = null;
+        private GitHubEvents lastEvents = null;
         private DateTime lastEventFetchTime = DateTime.Now;
 
         public GitHubEventStream(String url)
@@ -32,7 +32,7 @@ namespace JGitEventViewer
             this.url = new Uri(url);
         }
 
-        private async Task<JsonArray> FetchJSONEvents()
+        private async Task<GitHubEvents> FetchJSONEvents()
         {
             // First check if we already have previously fetched Events object and it's within the GitHub Poll Internal
             lock (lastEventsLock)
@@ -80,10 +80,12 @@ namespace JGitEventViewer
                 */
 
                 httpResponseBody = await httpResponse.Content.ReadAsStringAsync();
+                JsonArray jsonData = JsonArray.Parse(httpResponseBody);
+                GitHubEvents parsedData = GitHubEvents.Build(jsonData);
+
                 lock (lastEventsLock)
                 {
-                    lastEvents = JsonArray.Parse(httpResponseBody);
-                    GitHubEvents realLastEvents = GitHubEvents.Build(lastEvents);
+                    lastEvents = parsedData;
                     lastEventFetchTime = DateTime.Now;
                 }
                 return lastEvents;
@@ -97,13 +99,12 @@ namespace JGitEventViewer
         /**
          * Start refresh
          */
-        public async Task<String> RefreshAsync()
+        public async Task<GitHubEvents> RefreshAsync()
         {
 
-            JsonArray result = await FetchJSONEvents();
-            JsonObject b = result.GetObjectAt(0);
-
-            return b["id"].ToString();
+            GitHubEvents result = await FetchJSONEvents();
+            // TODO: More logic here?
+            return result;
         }
 
         /**

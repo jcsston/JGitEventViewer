@@ -65,6 +65,11 @@ namespace JGitEventViewer
         public DateTime created_at { get; set; }
         public string id { get; set; }
 
+        public override string ToString()
+        {
+            return String.Format("Created At: {0} Type: {1} Repo: {2} Actor: {3}", new object[] { created_at, type, repo, actor });
+        }
+
         static public GitHubEvent Build(JsonObject o)
         {
             GitHubEvent e = new GitHubEvent();
@@ -104,6 +109,11 @@ namespace JGitEventViewer
         public int id { get; set; }
         public string name { get; set; }
         public string url { get; set; }
+        
+        public override string ToString()
+        {
+            return String.Format("{0} ({1})", name, id);
+        }
 
         static public Repo Build(JsonObject o)
         {
@@ -122,6 +132,11 @@ namespace JGitEventViewer
         public string gravatar_id { get; set; }
         public string avatar_url { get; set; }
         public string url { get; set; }
+
+        public override string ToString()
+        {
+            return String.Format("{0} ({1})", login, id);
+        }
 
         static public Actor Build(JsonObject o)
         {
@@ -142,6 +157,11 @@ namespace JGitEventViewer
         public string gravatar_id { get; set; }
         public string url { get; set; }
         public string avatar_url { get; set; }
+
+        public override string ToString()
+        {
+            return String.Format("{0} ({1})", login, id);
+        }
 
         static public Org Build(JsonObject o)
         {
