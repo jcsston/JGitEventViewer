@@ -19,6 +19,9 @@ namespace JGitEventViewer
     {
         private Uri url = null;
         private int requestInterval = 30; // 30 seconds by default
+        private object lastEventsLock = new object();
+        private JsonArray lastEvents = null;
+        private DateTime lastEventFetchTime = DateTime.Now;
 
         public GitHubEventStream(String url)
         {
@@ -29,11 +32,18 @@ namespace JGitEventViewer
             this.url = new Uri(url);
         }
 
-        /**
-         * Start refresh
-         */
-        public async Task<String> RefreshAsync()
+        private async Task<JsonArray> FetchJSONEvents()
         {
+            // First check if we already have previously fetched Events object and it's within the GitHub Poll Internal
+            lock (lastEventsLock)
+            {
+                if (lastEvents != null && (DateTime.Now - lastEventFetchTime).TotalSeconds < requestInterval)
+                {
+                    JEventSource.Log.Info("Returning cached GitHub Events");
+                    return lastEvents;
+                }
+            }
+
             //Create an HTTP client object
             Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();
 
@@ -70,58 +80,30 @@ namespace JGitEventViewer
                 */
 
                 httpResponseBody = await httpResponse.Content.ReadAsStringAsync();
-
-                JsonArray result = JsonArray.Parse(httpResponseBody);
-                return result.GetObjectAt(0).ToString();
-
+                lock (lastEventsLock)
+                {
+                    lastEvents = JsonArray.Parse(httpResponseBody);
+                    GitHubEvents realLastEvents = GitHubEvents.Build(lastEvents);
+                    lastEventFetchTime = DateTime.Now;
+                }
+                return lastEvents;
             }
             catch (Exception ex)
             {
-                httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+                throw new ArgumentException("Unable to fetch JSON", ex);   
             }
-            
-            return httpResponseBody;
-            /*
-            HttpWebRequest request = (HttpWebRequest)System.Net.WebRequest.CreateHttp(this.url);
+        }
 
-            WebResponse response = request.GetResponse();
-            String xPollInterval = response.Headers.Get("X-Poll-Interval");
-            if (xPollInterval != null && int.TryParse(xPollInterval, out requestInterval))
-            {
-                Trace.TraceInformation(String.Format("Found polling interval of {0}", requestInterval));
-            }
-            else
-            {
-                Trace.TraceWarning(String.Format("No polling interval found, using default {0} seconds", requestInterval));
-            }
+        /**
+         * Start refresh
+         */
+        public async Task<String> RefreshAsync()
+        {
 
+            JsonArray result = await FetchJSONEvents();
+            JsonObject b = result.GetObjectAt(0);
 
-            foreach (string headerName in response.Headers.AllKeys)
-            {
-                Trace.TraceInformation(String.Format("Header: {0} Value: {1}", new object[] { headerName, response.Headers[headerName] }));
-            }
-
-            Trace.TraceInformation(String.Format("Content Length is {0}", response.ContentLength));
-
-            using (TextReader r = new StreamReader(response.GetResponseStream()))
-            {
-                String jsonBlob = r.ReadToEnd();
-                Trace.TraceInformation(String.Format("JSON Blob: {0}", jsonBlob));
-
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(GitHubEvents));
-
-                MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(jsonBlob));
-                GitHubEvents result = (GitHubEvents)serializer.ReadObject(ms);
-
-                if (result.Events != null)
-                {
-                    foreach (GitHubEvent gitEvent in result.Events)
-                    {
-                        Trace.TraceInformation(String.Format("Git Event Type: {0} Date: {1} User: {2}", new object[] { gitEvent.type, gitEvent.created_at, gitEvent.actor.login }));
-                    }
-                }
-            }
-            */
+            return b["id"].ToString();
         }
 
         /**

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Windows.Data.Json;
 
 namespace JGitEventViewer
 {
@@ -38,6 +40,18 @@ namespace JGitEventViewer
     public class GitHubEvents
     {
         public GitHubEvent[] Events { get; set; }
+
+        static public GitHubEvents Build(JsonArray a)
+        {
+            GitHubEvents e = new GitHubEvents();
+            e.Events = new GitHubEvent[a.Count];
+            for (int i = 0; i < a.Count; i++)
+            {
+                JsonObject o = a[i].GetObject();
+                e.Events[i] = GitHubEvent.Build(o);
+            }
+            return e;
+        }
     }
 
     public class GitHubEvent
@@ -50,10 +64,39 @@ namespace JGitEventViewer
         public Org org { get; set; }
         public DateTime created_at { get; set; }
         public string id { get; set; }
+
+        static public GitHubEvent Build(JsonObject o)
+        {
+            GitHubEvent e = new GitHubEvent();
+            e.type = o.GetNamedString("type", "");
+            e._public = o["public"].GetBoolean();
+            if (o.ContainsKey("repo"))
+            {
+                e.repo = Repo.Build(o["repo"].GetObject());
+            }
+            if (o.ContainsKey("actor"))
+            {
+                e.actor = Actor.Build(o["actor"].GetObject());
+            }
+            if (o.ContainsKey("org"))
+            {
+                e.org = Org.Build(o["org"].GetObject());
+            }
+            e.created_at = DateTime.Parse(o["created_at"].GetString());
+            e.id = o.GetNamedString("id", "");
+
+            return e;
+        }
     }
 
     public class Payload
     {
+        static public Payload Build(JsonObject o)
+        {
+            Payload p = new Payload();
+            // Payload is empty?
+            return p;
+        }
     }
 
     public class Repo
@@ -61,6 +104,15 @@ namespace JGitEventViewer
         public int id { get; set; }
         public string name { get; set; }
         public string url { get; set; }
+
+        static public Repo Build(JsonObject o)
+        {
+            Repo r = new Repo();
+            r.id = (int)o["id"].GetNumber();
+            r.name = o["name"].GetString();
+            r.url = o["url"].GetString();
+            return r;
+        }
     }
 
     public class Actor
@@ -70,6 +122,17 @@ namespace JGitEventViewer
         public string gravatar_id { get; set; }
         public string avatar_url { get; set; }
         public string url { get; set; }
+
+        static public Actor Build(JsonObject o)
+        {
+            Actor a = new Actor();
+            a.id = (int)o["id"].GetNumber();
+            a.login = o["login"].GetString();
+            a.gravatar_id = o["gravatar_id"].GetString();
+            a.avatar_url = o["avatar_url"].GetString();
+            a.url = o["url"].GetString();
+            return a;
+        }
     }
 
     public class Org
@@ -79,6 +142,17 @@ namespace JGitEventViewer
         public string gravatar_id { get; set; }
         public string url { get; set; }
         public string avatar_url { get; set; }
+
+        static public Org Build(JsonObject o)
+        {
+            Org a = new Org();
+            a.id = (int)o["id"].GetNumber();
+            a.login = o["login"].GetString();
+            a.gravatar_id = o["gravatar_id"].GetString();
+            a.avatar_url = o["avatar_url"].GetString();
+            a.url = o["url"].GetString();
+            return a;
+        }
     }
 
 }
