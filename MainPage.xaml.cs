@@ -30,19 +30,22 @@ namespace JGitEventViewer
 
         private async void Refresh()
         {
-            this.GitEvents.Items.Clear();
             this.EventFetchProgressCircle.IsActive = true;
 
             GitHubEvents result = await ((App)App.Current).Git.RefreshAsync();
-            foreach (GitHubEvent e in result.Events)
-            {
-                this.GitEvents.Items.Add(e);
-            }
+            this.GitEvents.ItemsSource = result;
 
             this.EventFetchProgressCircle.IsActive = false;
         }
+
         private void RefreshEvents_Click(object sender, RoutedEventArgs e)
         {
+            this.Refresh();
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Trigger inital refresh
             this.Refresh();
         }
     }

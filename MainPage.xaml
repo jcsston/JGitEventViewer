@@ -5,8 +5,28 @@
     xmlns:local="using:JGitEventViewer"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Loaded="Page_Loaded">
 
+    <Page.Resources>
+        <DataTemplate x:Key="DetailContentTemplate" x:DataType="local:GitHubEvent">
+            <StackPanel>
+                <TextBlock
+                    Margin="0,8"
+                    Style="{ThemeResource TitleTextBlockStyle}"
+                    HorizontalAlignment="Left"
+                    Text="{x:Bind actor.login}"/>
+
+                <TextBlock
+                    Margin="0,9"
+                    HorizontalAlignment="Left"
+                    MaxWidth="560"
+                    Style="{ThemeResource BodyTextBlockStyle}"
+                    Text="{x:Bind payload}" />
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+    
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -14,15 +34,69 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
         <TextBlock TextWrapping="Wrap" Text="Use the refresh button below to fetch latest GitHub Events" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="5"/>
         <Button x:Name="RefreshEvents" Content="Refresh" HorizontalAlignment="Left"  VerticalAlignment="Top" Click="RefreshEvents_Click" Grid.Row="1" Grid.Column="2" Margin="5"/>
         <ProgressRing x:Name="EventFetchProgressCircle" HorizontalAlignment="Left"  VerticalAlignment="Top" Height="32" Width="32" Grid.Row="1" Margin="5"/>
-        <ListView x:Name="GitEvents" HorizontalAlignment="Stretch"  Grid.Row="2" Grid.ColumnSpan="2" Margin="5">
 
-        </ListView>
+        <Grid Grid.Row="2" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="MasterColumn" Width="320" />
+                <ColumnDefinition x:Name="DetailColumn" Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Text="Git Events"
+                Grid.Row="0" Grid.Column="0"
+                Margin="12,8,8,8"
+                Style="{ThemeResource TitleTextBlockStyle}" />
+
+            <ListView x:Name="GitEvents" Grid.Row="1" Grid.Column="0" Margin="5">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:GitHubEvent">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="64"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Image MaxWidth="64" Margin="0,0,10,10" Source="{x:Bind actor.avatar_url}" Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"/>
+                            <TextBlock Text="{x:Bind actor.login}" Grid.Column="1" Grid.Row="0" Style="{ThemeResource BaseTextBlockStyle}"/>
+                            <TextBlock Text="{x:Bind created_at}" Grid.Column="2" Grid.Row="0" Style="{ThemeResource ListCaptionAltTextblockStyle}"/>
+                            <TextBlock Text="{x:Bind type}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Style="{ThemeResource ListBodyTextBlockStyle}" />
+                            <TextBlock Text="{x:Bind repo.name}" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="2" Style="{ThemeResource ListBodyTextBlockStyle}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <ContentPresenter
+                x:Name="DetailContentPresenter"
+                Grid.Row="0"
+                Grid.Column="1"
+                Grid.RowSpan="2"
+                BorderThickness="1,0,0,0"
+                Padding="24,0"
+                BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                Content="{x:Bind GitEvents.SelectedItem, Mode=OneWay}"
+                ContentTemplate="{StaticResource DetailContentTemplate}">
+
+
+            </ContentPresenter>
+        </Grid>
     </Grid>
 </Page>

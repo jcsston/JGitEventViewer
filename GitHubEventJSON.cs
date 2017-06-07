@@ -37,18 +37,15 @@ namespace JGitEventViewer
       }
     ]
     */
-    public class GitHubEvents
+    public class GitHubEvents : List<GitHubEvent>
     {
-        public GitHubEvent[] Events { get; set; }
-
         static public GitHubEvents Build(JsonArray a)
         {
             GitHubEvents e = new GitHubEvents();
-            e.Events = new GitHubEvent[a.Count];
             for (int i = 0; i < a.Count; i++)
             {
                 JsonObject o = a[i].GetObject();
-                e.Events[i] = GitHubEvent.Build(o);
+                e.Add(GitHubEvent.Build(o));
             }
             return e;
         }
@@ -87,6 +84,10 @@ namespace JGitEventViewer
             {
                 e.org = Org.Build(o["org"].GetObject());
             }
+            if (o.ContainsKey("payload"))
+            {
+                e.payload = Payload.Build(o["payload"].GetObject());
+            }
             e.created_at = DateTime.Parse(o["created_at"].GetString());
             e.id = o.GetNamedString("id", "");
 
@@ -96,10 +97,18 @@ namespace JGitEventViewer
 
     public class Payload
     {
+        public string content { get; set; }
+
+        public override string ToString()
+        {
+            return content;
+        }
+
         static public Payload Build(JsonObject o)
         {
             Payload p = new Payload();
             // Payload is empty?
+            p.content = o.ToString();
             return p;
         }
     }
