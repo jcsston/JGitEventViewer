@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    
+    <title>GitHub Feed</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- For templating -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.js"></script>
+
+    <script id="template-github-event-list" type="x-tmpl-mustache">
+        {{#.}}
+        <a class='list-group-item' onclick='showDetails({{id}})'>
+            <h4 class='list-group-item-heading'>{{type}}</h4>
+            <p class='list-group-item-text'>{{repo.name}} @ {{created_at}}</p>
+        </a>
+        {{/.}}
+    </script>
+
+    <script id="template-github-event-details" type="x-tmpl-mustache">
+        <p>{{created_at}}</p>
+        <p><a href="https://github.com/{{eventData.actor.login}}" target="_blank">
+        <img src="{{actor.avatar_url}}" width="48" align="middle">{{actor.login}}</a></p>
+        <p>Repo: <a href="https://github.com/{{repo.name}}" target="_blank">{{repo.name}}</a></p>
+        {{#org}}
+        <p>Organization: <a href="https://github.com/{{org.login}}" target="_blank">{{#org.avatar_url}}<img href="{{org.avatar_url}}" align="middle">{{/org.avatar_url}}{{org.login}}</a></p>
+        {{/org}}
+    </script>
+
+    <script type="text/javascript">
+        var lastEventsData = null;
+        var lastEventFetchTime = Date.now();
+        var lastXPollInterval = 60; // Default as of 6/8/2017
+        var templateGithubEventList = $('#template-github-event-list').html();
+        var templateGithubEventDetails = $('#template-github-event-details').html();
+
+        function refreshEventsCallback(data, textStatus, jqXHR) {
+            if (jqXHR && jqXHR.getResponseHeader('X-Poll-Interval')) {
+                lastXPollInterval = Number.parseInt(jqXHR.getResponseHeader('X-Poll-Interval'));
+            }
+
+            // We keep a copy of the last datetime fetch and data we fetched for the details event and to observe the X-Poll-Header
+            lastEventFetchTime = Date.now();
+            lastEventsData = data;
+
+            $("#gitHubEventList").html(Mustache.render(templateGithubEventList, data));
+            if (items.length > 0) {
+                showDetails(data[0].id);
+            }
+        }
+            
+        function refreshEvents() {
+            var timeSinceLastFetch = (Date.now() - lastEventFetchTime) / 1000;
+            if (lastEventsData && timeSinceLastFetch < lastXPollInterval) {
+                var timeToWait = lastXPollInterval - timeSinceLastFetch;
+                alert("Please wait " + timeToWait + " seconds to refesh again. Be nice to GitHub servers :)");
+            } else {
+                $.getJSON("https://api.github.com/events", refreshEventsCallback);
+            }
+        }
+
+        function showDetails(eventId) {
+            for (var i = 0, len = lastEventsData.length; i < len; i++) {
+                eventData = lastEventsData[i];
+                if (eventData.id == eventId) {
+                    $("#gitHubEventDetails").html(
+                        Mustache.render(templateGithubEventDetails, eventData)
+                    );
+                    break;
+                }
+            }
+        }
+
+        // Populate event list on page load
+        $(document).ready(refreshEvents);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>GitHub Feed</h1>
+        </div>
+        <p>
+            <button type="button" class="btn btn-md btn-default" onclick="refreshEvents()"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Refresh</button>
+        </p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="list-group" id="gitHubEventList">
+                    <a href="#" class="list-group-item">
+                        <h4 class="list-group-item-heading">List group item heading</h4>
+                        <p class="list-group-item-text">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+                    </a>
+                    <a href="#" class="list-group-item">
+                        <h4 class="list-group-item-heading">List group item heading</h4>
+                        <p class="list-group-item-text">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+                    </a>
+                    <a href="#" class="list-group-item">
+                        <h4 class="list-group-item-heading">List group item heading</h4>
+                        <p class="list-group-item-text">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
+                    </a>
+                </div>
+            </div><!-- /.col-sm-4 -->
+            <div class="col-md-8">
+                <div class="panel panel-default" style="position: static;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Event Details</h3>
+                    </div>
+                    <div class="panel-body" id="gitHubEventDetails">
+                        Panel content
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
